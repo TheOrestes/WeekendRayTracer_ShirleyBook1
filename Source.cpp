@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include "Vector3.h"
 #include "Ray.h"
 #include "Sphere.h"
@@ -14,15 +15,31 @@ Vector3 LerpVector(const Vector3& vec1, const Vector3& vec2, float t)
 	return (1.0f - t) * vec1 + t * vec2;
 }
 
+double GetRandom01()
+{
+	return ((double)rand() / (RAND_MAX + 1));
+}
 
+Vector3 RandomInUnitSphere()
+{
+	Vector3 P;
+
+	do
+	{
+		P = 2.0f * Vector3(GetRandom01(), GetRandom01(), GetRandom01()) - Vector3(1, 1, 1);
+	} while (P.squaredLength() >= 1.0f);
+
+	return P;
+}
 
 Vector3 TraceColor(const Ray& r, Hitable* world)
 {
 	HitRecord rec;
 
-	if (world->hit(r, 0.0f, FLT_MAX, rec))
+	if (world->hit(r, 0.001f, FLT_MAX, rec))
 	{
-		return 0.5f * Vector3(rec.N.x + 1, rec.N.y + 1, rec.N.z + 1);
+		Vector3 target = rec.P + rec.N + RandomInUnitSphere();
+		return 0.5f * TraceColor(Ray(rec.P, target - rec.P), world);
 	}
 	else
 	{
@@ -30,11 +47,6 @@ Vector3 TraceColor(const Ray& r, Hitable* world)
 		float t = 0.5 * (unit_direction.y + 1.0f);
 		return LerpVector(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.5f, 0.7f, 1.0f), t);
 	}
-}
-
-int GetRandom01()
-{
-	return ((double)rand() / (RAND_MAX)) + 1;
 }
 
 int main()

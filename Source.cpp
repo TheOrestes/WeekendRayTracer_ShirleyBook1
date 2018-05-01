@@ -7,45 +7,37 @@
 #include "Sphere.h"
 #include "HitableList.h"
 #include "Camera.h"
+#include "Helper.h"
+#include "Material.h"
+#include "Lambertian.h"
+#include "Metal.h"
 
 const int COLOR_CHANNELS = 3;	// RGB
 
-Vector3 LerpVector(const Vector3& vec1, const Vector3& vec2, float t)
-{
-	return (1.0f - t) * vec1 + t * vec2;
-}
 
-double GetRandom01()
-{
-	return ((double)rand() / (RAND_MAX + 1));
-}
-
-Vector3 RandomInUnitSphere()
-{
-	Vector3 P;
-
-	do
-	{
-		P = 2.0f * Vector3(GetRandom01(), GetRandom01(), GetRandom01()) - Vector3(1, 1, 1);
-	} while (P.squaredLength() >= 1.0f);
-
-	return P;
-}
-
-Vector3 TraceColor(const Ray& r, Hitable* world)
+Vector3 TraceColor(const Ray& r, Hitable* world, int depth)
 {
 	HitRecord rec;
 
 	if (world->hit(r, 0.001f, FLT_MAX, rec))
 	{
-		Vector3 target = rec.P + rec.N + RandomInUnitSphere();
-		return 0.5f * TraceColor(Ray(rec.P, target - rec.P), world);
+		Ray scatteredRay;
+		Vector3 attenuation;
+
+		if (depth < 50 && rec.mat_ptr->Scatter(r, rec, attenuation, scatteredRay))
+		{
+			return attenuation * TraceColor(scatteredRay, world, depth + 1);
+		}
+		else
+		{
+			return Vector3(0, 0, 0);
+		}
 	}
 	else
 	{
 		Vector3 unit_direction = unit_vector(r.GetRayDirection());
 		float t = 0.5 * (unit_direction.y + 1.0f);
-		return LerpVector(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.5f, 0.7f, 1.0f), t);
+		return Helper::LerpVector(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.5f, 0.7f, 1.0f), t);
 	}
 }
 
@@ -57,7 +49,7 @@ int main()
 
 	int nx = 800;
 	int ny = 400;
-	int ns = 1;	// number of samples per pixel!
+	int ns = 100;	// number of samples per pixel!
 
 	fprintf(filePtr, "P3\n %d %d \n255", nx, ny);
 
@@ -66,11 +58,12 @@ int main()
 	Vector3 horizontal(4.0f, 0.0f, 0.0f);
 	Vector3 vertical(0.0f, 2.0f, 0.0f);
 
-	Hitable* list[2];
-	list[0] = new Sphere(Vector3(0, -100.5, -1), 100);
-	list[1] = new Sphere(Vector3(0, 0, -1), 0.5);
-
-	Hitable* world = new HitableList(list, 2);
+	Hitable* list[4];
+	list[0] = new Sphere(Vector3(0, -100.5, -1), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
+	list[1] = new Sphere(Vector3(1, 0, -1.5), 0.5, new Metal(Vector3(0.8, 0.6, 0.2), 0.0));
+	list[2] = new Sphere(Vector3(-1, 0, -1.5), 0.5, new Metal(Vector3(0.8, 0.8, 0.8), 0.4));
+	list[3] = new Sphere(Vector3(0, 0, -1.25), 0.5, new Lambertian(Vector3(1.0, 0.2, 0.0)));
+	Hitable* world = new HitableList(list, 4);
 
 	Camera cam;
 
@@ -82,15 +75,16 @@ int main()
 
 			for (int s = 0; s < ns; s++)
 			{
-				float u = float(i + GetRandom01()) / float(nx);
-				float v = float(j + GetRandom01()) / float(ny);
+				float u = float(i + Helper::GetRandom01()) / float(nx);
+				float v = float(j + Helper::GetRandom01()) / float(ny);
 
 				Ray r = cam.get_ray(u, v);
 
-				color = color + TraceColor(r, world);
+				color = color + TraceColor(r, world, 0);
 			}
 
 			color = color / float(ns);
+			color = Vector3(sqrt(color.x), sqrt(color.y), sqrt(color.z));
 
 			int ir = int(255.99*color.x);
 			int ig = int(255.99*color.y);

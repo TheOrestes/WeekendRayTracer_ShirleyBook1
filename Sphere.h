@@ -2,19 +2,23 @@
 
 #include "Hitable.h"
 
+class Material;
+
 class Sphere : public Hitable
 {
 public:
 	Sphere() {}
-	Sphere(Vector3 _center, float _r) :
+	Sphere(Vector3 _center, float _r, Material* ptr_mat) :
 		center(_center),
-		radius(_r) {};
+		radius(_r),
+		mat_ptr(ptr_mat) {};
 
 	virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord& rec) const;
 
 private:
 	Vector3 center;
 	float radius;
+	Material* mat_ptr;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +40,7 @@ bool Sphere::hit(const Ray& r, float tmin, float tmax, HitRecord& rec) const
 			rec.t = t;
 			rec.P = r.GetPointAt(t);
 			rec.N = (rec.P - center) / radius;
+			rec.mat_ptr = mat_ptr;
 			return true;
 		}
 
@@ -45,6 +50,7 @@ bool Sphere::hit(const Ray& r, float tmin, float tmax, HitRecord& rec) const
 			rec.t = t;
 			rec.P = r.GetPointAt(t);
 			rec.N = (rec.P - center) / radius;
+			rec.mat_ptr = mat_ptr;
 			return true;
 		}
 	}

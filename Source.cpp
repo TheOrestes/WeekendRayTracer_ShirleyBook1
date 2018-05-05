@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "Vector3.h"
 #include "Ray.h"
 #include "Sphere.h"
@@ -11,6 +12,9 @@
 #include "Material.h"
 #include "Lambertian.h"
 #include "Metal.h"
+
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
 
 const int COLOR_CHANNELS = 3;	// RGB
 
@@ -41,6 +45,12 @@ Vector3 TraceColor(const Ray& r, Hitable* world, int depth)
 	}
 }
 
+void ShowProgress(int percentage)
+{
+	system("cls");
+	printf("\nRendering Progress : %d%%\n", percentage);
+}
+
 int main()
 {
 	FILE* filePtr = std::fopen("rayTracer.ppm", "w");
@@ -49,7 +59,7 @@ int main()
 
 	int nx = 800;
 	int ny = 400;
-	int ns = 100;	// number of samples per pixel!
+	int ns = 1;	// number of samples per pixel!
 
 	fprintf(filePtr, "P3\n %d %d \n255", nx, ny);
 
@@ -66,6 +76,9 @@ int main()
 	Hitable* world = new HitableList(list, 4);
 
 	Camera cam;
+	int percentageDone = 0.0f;
+
+	const clock_t begin_time = clock();
 
 	for (int j = ny-1 ; j >= 0 ; j--)
 	{
@@ -92,7 +105,17 @@ int main()
 
 			fprintf(filePtr, "\n%d %d %d", ir, ig, ib);
 		}
+
+		percentageDone = ((ny - j)/4.0f);
+		ShowProgress(percentageDone);
 	}
+
+	const clock_t end_time = clock();
+	double time = (end_time - begin_time) / (double)CLOCKS_PER_SEC;
+
+	printf("Render Time : %.2f seconds\n", time);
+
+	system("pause");
 
 	return 1;
 }

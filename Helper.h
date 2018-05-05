@@ -2,6 +2,8 @@
 
 #include "Vector3.h"
 
+const float PI = 3.14159265358f;
+
 namespace Helper
 {
 	Vector3 LerpVector(const Vector3& vec1, const Vector3& vec2, float t)

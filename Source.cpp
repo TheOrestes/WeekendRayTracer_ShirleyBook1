@@ -60,19 +60,18 @@ int main()
 
 	fprintf(filePtr, "P3\n %d %d \n255", nx, ny);
 
-	Vector3 origin(0.0f, 0.0f, 0.0f);
-	Vector3 lower_left_corner(-2.0f, -1.0f, -1.0f);
-	Vector3 horizontal(4.0f, 0.0f, 0.0f);
-	Vector3 vertical(0.0f, 2.0f, 0.0f);
+	Hitable* list[6];
+	list[0] = new Sphere(Vector3(1.05f, 0, 0), 0.5, new Metal(Vector3(0.5, 0.2, 0.1), 0.0));
+	list[1] = new Sphere(Vector3(0, -100.5, 0), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
+	list[2] = new Sphere(Vector3(0, 0, 0.1), 0.5, new Transparent(1.5f));
+	list[3] = new Sphere(Vector3(-1.05f, 0, 0), 0.5, new Metal(Vector3(1.0, 0.2, 0.0), 0.05));
+	list[4] = new Sphere(Vector3(0.0f, -0.3, 1), 0.2, new Lambertian(Vector3(0.2, 0.5, 0.2)));
+	list[5] = new Sphere(Vector3(0.0f, 0, -3), 0.5, new Lambertian(Vector3(0.0, 0.0, 1.0)));
+	
+	
+	Hitable* world = new HitableList(list, 6);
 
-	Hitable* list[4];
-	list[0] = new Sphere(Vector3(0, -100.5, -1), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
-	list[1] = new Sphere(Vector3(1, 0, -1.5), 0.5, new Metal(Vector3(0.8, 0.6, 0.2), 0.0));
-	list[2] = new Sphere(Vector3(-1, 0, -1.5), 0.5, new Transparent(1.5f));
-	list[3] = new Sphere(Vector3(0, 0, -1.25), 0.5, new Lambertian(Vector3(1.0, 0.2, 0.0)));
-	Hitable* world = new HitableList(list, 4);
-
-	Camera cam;
+	Camera cam(Vector3(0,0.75,2), Vector3(0,0,0), Vector3(0,1,0), 90, float(nx) / float(ny));
 	int percentageDone = 0.0f;
 
 	const clock_t begin_time = clock();

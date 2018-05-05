@@ -129,6 +129,7 @@
     <ClInclude Include="Metal.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Transparent.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

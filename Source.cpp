@@ -12,12 +12,9 @@
 #include "Material.h"
 #include "Lambertian.h"
 #include "Metal.h"
-
-#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60
+#include "Transparent.h"
 
 const int COLOR_CHANNELS = 3;	// RGB
-
 
 Vector3 TraceColor(const Ray& r, Hitable* world, int depth)
 {
@@ -59,7 +56,7 @@ int main()
 
 	int nx = 800;
 	int ny = 400;
-	int ns = 1;	// number of samples per pixel!
+	int ns = 100;	// number of samples per pixel!
 
 	fprintf(filePtr, "P3\n %d %d \n255", nx, ny);
 
@@ -71,7 +68,7 @@ int main()
 	Hitable* list[4];
 	list[0] = new Sphere(Vector3(0, -100.5, -1), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
 	list[1] = new Sphere(Vector3(1, 0, -1.5), 0.5, new Metal(Vector3(0.8, 0.6, 0.2), 0.0));
-	list[2] = new Sphere(Vector3(-1, 0, -1.5), 0.5, new Metal(Vector3(0.8, 0.8, 0.8), 0.4));
+	list[2] = new Sphere(Vector3(-1, 0, -1.5), 0.5, new Transparent(1.5f));
 	list[3] = new Sphere(Vector3(0, 0, -1.25), 0.5, new Lambertian(Vector3(1.0, 0.2, 0.0)));
 	Hitable* world = new HitableList(list, 4);
 

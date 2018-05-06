@@ -48,30 +48,75 @@ void ShowProgress(int percentage)
 	printf("\nRendering Progress : %d%%\n", percentage);
 }
 
+Hitable* random_scene()
+{
+	int n = 500;
+	Hitable** list = new Hitable*[n + 1];
+	list[0] = new Sphere(Vector3(0, -1000, 0), 1000, new Lambertian(Vector3(0.5, 0.5, 0.5)));
+	int i = 1;
+	for (int a = -11; a < 11; a++)
+	{
+		for (int b = -11; b < 11; b++)
+		{
+			float choose_mat = Helper::GetRandom01();
+			Vector3 center(a + 0.9f*Helper::GetRandom01(), 0.2, b + 0.9*Helper::GetRandom01());
+			if ((center - Vector3(4, 0.2, 0)).length() > 0.9f)
+			{
+				if (choose_mat < 0.8f)
+				{
+					// diffuse
+					list[i++] = new Sphere(center, 0.2f, new Lambertian(Vector3(Helper::GetRandom01()*Helper::GetRandom01(), Helper::GetRandom01()*Helper::GetRandom01(), Helper::GetRandom01()*Helper::GetRandom01())));
+				}
+				else if (choose_mat < 0.95)
+				{
+					// Metal
+					list[i++] = new Sphere(center, 0.2f, new Metal(Vector3(0.5f*(1 + Helper::GetRandom01()), 0.5f*(1 + Helper::GetRandom01()), 0.5f*(1 + Helper::GetRandom01())), Helper::GetRandom01()));
+				}
+				else
+				{
+					// glass
+					list[i++] = new Sphere(center, 0.2f, new Transparent(1.5f));
+				}
+			}
+		}
+	}
+
+	list[i++] = new Sphere(Vector3(0, 1, 0), 1.0f, new Transparent(1.5f));
+	list[i++] = new Sphere(Vector3(-4, 1, 0), 1.0f, new Lambertian(Vector3(0.4f, 0.2f, 0.1f)));
+	list[i++] = new Sphere(Vector3(4, 1, 0), 1.0f, new Metal(Vector3(0.7f, 0.6f, 0.5f), 0.0f));
+
+	return new HitableList(list, i);
+}
+
 int main()
 {
 	FILE* filePtr = std::fopen("rayTracer.ppm", "w");
 	if (!filePtr)
 		return 0;
 
-	int nx = 800;
-	int ny = 400;
+	int nx = 400;
+	int ny = 200;
 	int ns = 100;	// number of samples per pixel!
 
 	fprintf(filePtr, "P3\n %d %d \n255", nx, ny);
 
-	Hitable* list[6];
-	list[0] = new Sphere(Vector3(1.05f, 0, 0), 0.5, new Metal(Vector3(0.5, 0.2, 0.1), 0.0));
-	list[1] = new Sphere(Vector3(0, -100.5, 0), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
-	list[2] = new Sphere(Vector3(0, 0, 0.1), 0.5, new Transparent(1.5f));
-	list[3] = new Sphere(Vector3(-1.05f, 0, 0), 0.5, new Metal(Vector3(1.0, 0.2, 0.0), 0.05));
-	list[4] = new Sphere(Vector3(0.0f, -0.3, 1), 0.2, new Lambertian(Vector3(0.2, 0.5, 0.2)));
-	list[5] = new Sphere(Vector3(0.0f, 0, -3), 0.5, new Lambertian(Vector3(0.0, 0.0, 1.0)));
+	//Hitable* list[6];
+	//list[0] = new Sphere(Vector3(1.05f, 0, 0), 0.5, new Metal(Vector3(0.5, 0.2, 0.1), 0.0));
+	//list[1] = new Sphere(Vector3(0, -100.5, 0), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
+	//list[2] = new Sphere(Vector3(0, 0, 0.1), 0.5, new Transparent(1.5f));
+	//list[3] = new Sphere(Vector3(-1.05f, 0, 0), 0.5, new Metal(Vector3(1.0, 0.2, 0.0), 0.05));
+	//list[4] = new Sphere(Vector3(0.0f, -0.3, 1), 0.2, new Lambertian(Vector3(0.2, 0.5, 0.2)));
+	//list[5] = new Sphere(Vector3(0.0f, 0, -3), 0.5, new Lambertian(Vector3(0.0, 0.0, 1.0)));
 	
 	
-	Hitable* world = new HitableList(list, 6);
+	Hitable* world = random_scene(); //new HitableList(list, 6);
 
-	Camera cam(Vector3(0,0.75,2), Vector3(0,0,0), Vector3(0,1,0), 90, float(nx) / float(ny));
+	Vector3 lookFrom(13,2,3);
+	Vector3 lookAt(0, 0, 0);
+	float dist_to_focus = 10.0f;
+	float aperture = 0.1f;
+
+	Camera cam(lookFrom, lookAt, Vector3(0,1,0), 20, float(nx) / float(ny), aperture, dist_to_focus );
 	int percentageDone = 0.0f;
 
 	const clock_t begin_time = clock();

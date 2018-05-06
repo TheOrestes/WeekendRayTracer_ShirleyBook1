@@ -16,6 +16,17 @@ namespace Helper
 		return ((double)rand() / (RAND_MAX + 1));
 	}
 
+	Vector3 GetRandomInUnitDisk()
+	{
+		Vector3 p;
+		do
+		{
+			p = 2.0f * Vector3(GetRandom01(), GetRandom01(), 0.0f) - Vector3(1, 1, 0);
+		} while (dot(p, p) >= 1.0f);
+		
+		return p;
+	}
+
 	Vector3 RandomInUnitSphere()
 	{
 		Vector3 P;

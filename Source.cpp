@@ -88,6 +88,18 @@ Hitable* random_scene()
 	return new HitableList(list, i);
 }
 
+Hitable* BasicTestScene()
+{
+	Hitable** list = new Hitable*[5];
+	list[0] = new Sphere(Vector3(1.05f, 0, 0), 0.5, new Metal(Vector3(0.5, 0.2, 0.1), 0.5));
+	list[1] = new Sphere(Vector3(0, -100.5, 0), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
+	list[2] = new Sphere(Vector3(0, 0, 0.1), 0.5, new Transparent(1.5f));
+	list[3] = new Sphere(Vector3(-1.05f, 0, 0), 0.5, new Metal(Vector3(1.0, 0.2, 0.0), 0));
+	list[4] = new Sphere(Vector3(0.0f, 0, -3), 0.5, new Lambertian(Vector3(1.0, 1.0, 0.0)));
+
+	return new HitableList(list, 5);
+}
+
 int main()
 {
 	FILE* filePtr = std::fopen("rayTracer.ppm", "w");
@@ -96,30 +108,23 @@ int main()
 
 	int nx = 400;
 	int ny = 200;
-	int ns = 100;	// number of samples per pixel!
+	int ns = 1;	// number of samples per pixel!
 
 	fprintf(filePtr, "P3\n %d %d \n255", nx, ny);
-
-	//Hitable* list[6];
-	//list[0] = new Sphere(Vector3(1.05f, 0, 0), 0.5, new Metal(Vector3(0.5, 0.2, 0.1), 0.0));
-	//list[1] = new Sphere(Vector3(0, -100.5, 0), 100, new Lambertian(Vector3(0.2, 0.2, 0.2)));
-	//list[2] = new Sphere(Vector3(0, 0, 0.1), 0.5, new Transparent(1.5f));
-	//list[3] = new Sphere(Vector3(-1.05f, 0, 0), 0.5, new Metal(Vector3(1.0, 0.2, 0.0), 0.05));
-	//list[4] = new Sphere(Vector3(0.0f, -0.3, 1), 0.2, new Lambertian(Vector3(0.2, 0.5, 0.2)));
-	//list[5] = new Sphere(Vector3(0.0f, 0, -3), 0.5, new Lambertian(Vector3(0.0, 0.0, 1.0)));
 	
 	
-	Hitable* world = random_scene(); //new HitableList(list, 6);
+	Hitable* world = BasicTestScene();
 
-	Vector3 lookFrom(13,2,3);
+	Vector3 lookFrom(0,1.5,6);
 	Vector3 lookAt(0, 0, 0);
-	float dist_to_focus = 10.0f;
-	float aperture = 0.1f;
+	float dist_to_focus = 1.0f;	// set this to 1.0 & apertue to 0.0f to stop DOF effect!
+	float aperture = 0.0f;
 
 	Camera cam(lookFrom, lookAt, Vector3(0,1,0), 20, float(nx) / float(ny), aperture, dist_to_focus );
 	int percentageDone = 0.0f;
 
 	const clock_t begin_time = clock();
+	double counter = 0;
 
 	for (int j = ny-1 ; j >= 0 ; j--)
 	{
@@ -145,9 +150,11 @@ int main()
 			int ib = int(255.99*color.z);
 
 			fprintf(filePtr, "\n%d %d %d", ir, ig, ib);
+
+			++counter;
 		}
 
-		percentageDone = ((ny - j)/4.0f);
+		percentageDone = (counter / (nx*ny)) * 100.0f;
 		ShowProgress(percentageDone);
 	}
 
